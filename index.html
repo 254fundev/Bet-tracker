@@ -1,1 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bankroll — Daily Discipline</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #232330;
+    --green: #00ff87;
+    --green-dim: #00ff8722;
+    --red: #ff4444;
+    --red-dim: #ff444422;
+    --gold: #ffd166;
+    --gold-dim: #ffd16622;
+    --text: #f0f0f8;
+    --muted: #6b6b88;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 20px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .app-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .bankroll-display {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: -0.02em;
+  }
+
+  .bankroll-display.danger { color: var(--red); }
+
+  .streak-badge {
+    background: var(--gold-dim);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .streak-badge .streak-num {
+    font-size: 20px;
+    font-weight: 700;
+    display: block;
+    line-height: 1.1;
+  }
+
+  /* DAILY TARGET BAR */
+  .target-bar {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+  }
+
+  .target-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .target-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .target-range {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green);
+  }
+
+  .progress-track {
+    background: var(--border);
+    border-radius: 3px;
+    height: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--green);
+    transition: width 0.4s ease;
+    max-width: 100%;
+  }
+
+  .progress-fill.at-target { background: var(--gold); }
+  .progress-fill.over { background: var(--red); }
+
+  /* SECTION */
+  .section {
+    padding: 20px 20px 0;
+  }
+
+  .section-title {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* RULE CARD */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .rule-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .rule-card.danger-zone {
+    border-color: var(--red);
+    background: var(--red-dim);
+  }
+
+  .rule-card.safe-zone {
+    border-color: var(--green);
+    background: var(--green-dim);
+  }
+
+  .rule-num {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .rule-num.green { color: var(--green); }
+  .rule-num.red { color: var(--red); }
+  .rule-num.gold { color: var(--gold); }
+
+  .rule-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* LOG FORM */
+  .log-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: var(--mono);
+  }
+
+  input, select, textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 9px 11px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--green);
+  }
+
+  select option { background: var(--surface); }
+
+  textarea { resize: none; height: 60px; font-size: 13px; }
+
+  .btn-log {
+    width: 100%;
+    background: var(--green);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 12px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: opacity 0.2s;
+  }
+
+  .btn-log:active { opacity: 0.8; }
+
+  /* ALERT */
+  .alert {
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    margin-bottom: 12px;
+    display: none;
+    border: 1px solid;
+    line-height: 1.5;
+  }
+
+  .alert.show { display: block; }
+  .alert.warn { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+  .alert.good { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+  .alert.info { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+
+  /* BET LIST */
+  .bet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .bet-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .bet-item.won { border-left: 3px solid var(--green); }
+  .bet-item.lost { border-left: 3px solid var(--red); }
+  .bet-item.void { border-left: 3px solid var(--muted); }
+
+  .bet-left { flex: 1; }
+
+  .bet-date {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-bottom: 3px;
+  }
+
+  .bet-desc {
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .bet-type-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-family: var(--mono);
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--surface2);
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+
+  .bet-right {
+    text-align: right;
+    flex-shrink: 0;
+    margin-left: 10px;
+  }
+
+  .bet-stake {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  .bet-return {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .bet-return.won { color: var(--green); }
+  .bet-return.lost { color: var(--red); }
+
+  .bet-profit {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .stat-val.green { color: var(--green); }
+  .stat-val.red { color: var(--red); }
+  .stat-val.gold { color: var(--gold); }
+
+  .stat-lbl {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: var(--mono);
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 12px 20px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+
+  .tab {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 8px 14px 10px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    margin-bottom: -1px;
+  }
+
+  .tab.active {
+    color: var(--green);
+    border-bottom-color: var(--green);
+  }
+
+  .tab-content { display: none; padding-top: 16px; }
+  .tab-content.active { display: block; }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 32px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: var(--mono);
+  }
+
+  .empty-icon { font-size: 28px; margin-bottom: 8px; }
+
+  /* DELETE BTN */
+  .del-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 4px;
+    line-height: 1;
+    margin-top: -2px;
+  }
+
+  .del-btn:active { color: var(--red); }
+
+  /* DAILY LOCK INDICATOR */
+  .lock-banner {
+    background: var(--gold-dim);
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--gold);
+    font-size: 13px;
+    display: none;
+    margin-bottom: 12px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .lock-banner.show { display: block; }
+
+  /* MILESTONE */
+  .milestone {
+    background: linear-gradient(135deg, #ffd16611 0%, #00ff8711 100%);
+    border: 1px solid var(--gold);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 12px;
+    display: none;
+  }
+
+  .milestone.show { display: block; }
+  .milestone-title { font-family: var(--mono); font-size: 11px; color: var(--gold); letter-spacing: 0.15em; margin-bottom: 6px; }
+  .milestone-val { font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--text); }
+
+  /* SCROLLABLE BET LIST */
+  .bet-scroll { max-height: 400px; overflow-y: auto; }
+  .bet-scroll::-webkit-scrollbar { width: 4px; }
+  .bet-scroll::-webkit-scrollbar-track { background: var(--bg); }
+  .bet-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* RESET */
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+  }
+
+  .reset-btn:active { border-color: var(--red); color: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="app-label">Bankroll</div>
+      <div class="bankroll-display" id="bankrollDisplay">KES 0.00</div>
+    </div>
+    <div class="streak-badge">
+      <span class="streak-num" id="streakNum">0</span>
+      🔥 streak
+    </div>
+  </div>
+
+  <div class="target-bar">
+    <div class="target-row">
+      <span class="target-label">Today's target</span>
+      <span class="target-range" id="targetRange">—</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('log')">Log Bet</button>
+  <button class="tab" onclick="switchTab('history')">History</button>
+  <button class="tab" onclick="switchTab('stats')">Stats</button>
+</div>
+
+<!-- LOG TAB -->
+<div class="tab-content active" id="tab-log">
+  <div class="section">
+
+    <div class="lock-banner" id="lockBanner">
+      ✅ Daily target hit — STOP HERE. Come back tomorrow.
+    </div>
+
+    <div class="milestone" id="milestone">
+      <div class="milestone-title">MILESTONE REACHED</div>
+      <div class="milestone-val" id="milestoneVal"></div>
+    </div>
+
+    <div class="alert" id="alertBox"></div>
+
+    <!-- Rules -->
+    <div class="section-title">Today's Rules</div>
+    <div class="rules-grid" id="rulesGrid">
+      <div class="rule-card">
+        <span class="rule-num green" id="minStake">—</span>
+        <span class="rule-desc">Min stake (20% bankroll)</span>
+      </div>
+      <div class="rule-card">
+        <span class="rule-num gold" id="maxStake">—</span>
+        <span class="rule-desc">Max stake (40% bankroll)</span>
+      </div>
+      <div class="rule-card">
+        <span class="rule-num green" id="target2x">—</span>
+        <span class="rule-desc">2x target today</span>
+      </div>
+      <div class="rule-card">
+        <span class="rule-num gold" id="target3x">—</span>
+        <span class="rule-desc">3x ceiling — stop</span>
+      </div>
+    </div>
+
+    <!-- Override: set opening bankroll -->
+    <div class="log-form" id="initForm">
+      <div class="section-title" style="margin-bottom:10px;">Set Opening Bankroll</div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Opening Balance (KES)</label>
+          <input type="number" id="initBankroll" placeholder="e.g. 5396" min="1">
+        </div>
+      </div>
+      <button class="btn-log" onclick="setOpeningBankroll()">SET BANKROLL</button>
+    </div>
+
+    <!-- Log Form -->
+    <div id="betFormWrapper">
+      <div class="log-form">
+        <div class="section-title" style="margin-bottom:10px;">Log a Bet</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Stake (KES)</label>
+            <input type="number" id="stakeInput" placeholder="e.g. 2400" min="1">
+          </div>
+          <div class="form-group">
+            <label>Return (KES)</label>
+            <input type="number" id="returnInput" placeholder="e.g. 4542" min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <select id="betType">
+              <option value="Multiple">Multiple</option>
+              <option value="Single">Single</option>
+              <option value="Accumulator">Accumulator</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Result</label>
+            <select id="betResult">
+              <option value="won">Won</option>
+              <option value="lost">Lost</option>
+              <option value="void">Void</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full">
+            <label>Matches (optional)</label>
+            <textarea id="matchesInput" placeholder="e.g. Uruguay v Venezuela, Ecuador v Argentina..."></textarea>
+          </div>
+        </div>
+        <button class="btn-log" onclick="logBet()">LOG BET</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- HISTORY TAB -->
+<div class="tab-content" id="tab-history">
+  <div class="section">
+    <div class="section-title">
+      Bet History
+      <button class="reset-btn" onclick="clearAll()">CLEAR ALL</button>
+    </div>
+    <div class="bet-scroll">
+      <div class="bet-list" id="betList">
+        <div class="empty"><div class="empty-icon">📋</div>No bets yet</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS TAB -->
+<div class="tab-content" id="tab-stats">
+  <div class="section">
+    <div class="section-title">Performance</div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-val green" id="statWins">0</span>
+        <span class="stat-lbl">Wins</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val red" id="statLosses">0</span>
+        <span class="stat-lbl">Losses</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val gold" id="statWinRate">0%</span>
+        <span class="stat-lbl">Win Rate</span>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-val" id="statTotalStaked">0</span>
+        <span class="stat-lbl">Total Staked</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val green" id="statTotalReturn">0</span>
+        <span class="stat-lbl">Total Return</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val gold" id="statROI">0%</span>
+        <span class="stat-lbl">ROI</span>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-val" id="statOpenBankroll">0</span>
+        <span class="stat-lbl">Opening</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val green" id="statCurrentBankroll">0</span>
+        <span class="stat-lbl">Current</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val gold" id="statGrowth">0%</span>
+        <span class="stat-lbl">Growth</span>
+      </div>
+    </div>
+
+    <!-- Projection -->
+    <div class="section-title" style="margin-top:16px;">Projection to KES 1,000,000</div>
+    <div id="projectionList" class="bet-list"></div>
+  </div>
+</div>
+
+<script>
+  // ---- STATE ----
+  let state = JSON.parse(localStorage.getItem('bankroll_state') || 'null') || {
+    openingBankroll: 0,
+    currentBankroll: 0,
+    bets: [],
+    streak: 0,
+    dayStart: null,
+    dayBankroll: 0,
+  };
+
+  function save() {
+    localStorage.setItem('bankroll_state', JSON.stringify(state));
+  }
+
+  function today() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function fmt(n) {
+    return 'KES ' + Number(n).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function fmtShort(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return n.toFixed(0);
+  }
+
+  // ---- INIT ----
+  function setOpeningBankroll() {
+    const val = parseFloat(document.getElementById('initBankroll').value);
+    if (!val || val <= 0) { showAlert('Enter a valid opening balance.', 'warn'); return; }
+    state.openingBankroll = val;
+    state.currentBankroll = val;
+    state.dayStart = today();
+    state.dayBankroll = val;
+    save();
+    render();
+    showAlert('Bankroll set. Ready to track.', 'good');
+  }
+
+  // ---- LOG BET ----
+  function logBet() {
+    if (!state.currentBankroll) { showAlert('Set your opening bankroll first.', 'warn'); return; }
+
+    const stake = parseFloat(document.getElementById('stakeInput').value);
+    const ret = parseFloat(document.getElementById('returnInput').value) || 0;
+    const type = document.getElementById('betType').value;
+    const result = document.getElementById('betResult').value;
+    const matches = document.getElementById('matchesInput').value.trim();
+
+    if (!stake || stake <= 0) { showAlert('Enter stake amount.', 'warn'); return; }
+
+    // Stake discipline check
+    const maxAllowed = state.currentBankroll * 0.4;
+    if (stake > maxAllowed) {
+      showAlert(`⚠️ Stake of ${fmt(stake)} exceeds 40% limit (${fmt(maxAllowed)}). Reduce your stake.`, 'warn');
+      return;
+    }
+
+    // New day reset
+    if (state.dayStart !== today()) {
+      state.dayStart = today();
+      state.dayBankroll = state.currentBankroll;
+    }
+
+    // Adjust bankroll
+    if (result === 'won') {
+      state.currentBankroll = state.currentBankroll - stake + ret;
+      state.streak++;
+    } else if (result === 'lost') {
+      state.currentBankroll = state.currentBankroll - stake;
+      state.streak = 0;
+    }
+    // void: no change
+
+    const bet = {
+      id: Date.now(),
+      date: today(),
+      time: new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' }),
+      stake, return: ret, type, result, matches,
+      bankrollAfter: state.currentBankroll
+    };
+
+    state.bets.unshift(bet);
+    save();
+    render();
+
+    // Clear form
+    document.getElementById('stakeInput').value = '';
+    document.getElementById('returnInput').value = '';
+    document.getElementById('matchesInput').value = '';
+
+    // Feedback
+    if (result === 'won') {
+      const profit = ret - stake;
+      showAlert(`✅ Bet won! +${fmt(profit)} | Bankroll: ${fmt(state.currentBankroll)}`, 'good');
+    } else if (result === 'lost') {
+      showAlert(`❌ Bet lost. -${fmt(stake)} | Bankroll: ${fmt(state.currentBankroll)}`, 'warn');
+    } else {
+      showAlert(`Void bet recorded. Bankroll unchanged.`, 'info');
+    }
+
+    checkDailyTarget();
+    checkMilestone(state.currentBankroll);
+  }
+
+  function checkDailyTarget() {
+    const base = state.dayBankroll || state.openingBankroll;
+    const target2x = base * 2;
+    const target3x = base * 3;
+    if (state.currentBankroll >= target2x) {
+      document.getElementById('lockBanner').classList.add('show');
+    }
+    if (state.currentBankroll >= target3x) {
+      document.getElementById('lockBanner').textContent = '🏆 3x hit! Bank it ALL. Do not bet again today.';
+      document.getElementById('lockBanner').classList.add('show');
+    }
+  }
+
+  const MILESTONES = [10000, 25000, 50000, 100000, 250000, 500000, 1000000];
+  let lastMilestoneReached = 0;
+
+  function checkMilestone(bankroll) {
+    for (const m of MILESTONES) {
+      if (bankroll >= m && lastMilestoneReached < m) {
+        lastMilestoneReached = m;
+        const el = document.getElementById('milestone');
+        document.getElementById('milestoneVal').textContent = fmt(m) + ' 🎯';
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 5000);
+        break;
+      }
+    }
+  }
+
+  // ---- RENDER ----
+  function render() {
+    const b = state.currentBankroll;
+
+    // Header
+    document.getElementById('bankrollDisplay').textContent = fmt(b);
+
+    // New day reset
+    if (state.dayStart !== today()) {
+      state.dayStart = today();
+      state.dayBankroll = b;
+      save();
+    }
+
+    const base = state.dayBankroll || b;
+    const t2 = base * 2;
+    const t3 = base * 3;
+    const progress = base > 0 ? Math.min(((b - base) / (t3 - base)) * 100, 100) : 0;
+
+    document.getElementById('targetRange').textContent = `${fmt(t2)} → ${fmt(t3)}`;
+    const fill = document.getElementById('progressFill');
+    fill.style.width = Math.max(0, progress) + '%';
+    fill.className = 'progress-fill' + (b >= t3 ? ' over' : b >= t2 ? ' at-target' : '');
+
+    document.getElementById('streakNum').textContent = state.streak;
+
+    // Rules
+    const minS = base * 0.20;
+    const maxS = base * 0.40;
+    document.getElementById('minStake').textContent = fmt(minS);
+    document.getElementById('maxStake').textContent = fmt(maxS);
+    document.getElementById('target2x').textContent = fmt(t2);
+    document.getElementById('target3x').textContent = fmt(t3);
+
+    // Init form
+    document.getElementById('initForm').style.display = b > 0 ? 'none' : 'block';
+    document.getElementById('betFormWrapper').style.display = b > 0 ? 'block' : 'none';
+
+    // Lock
+    if (b >= t2) document.getElementById('lockBanner').classList.add('show');
+
+    // Bet list
+    renderBets();
+    renderStats();
+    renderProjection();
+  }
+
+  function renderBets() {
+    const list = document.getElementById('betList');
+    if (!state.bets.length) {
+      list.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No bets yet</div>';
+      return;
+    }
+    list.innerHTML = state.bets.map(b => `
+      <div class="bet-item ${b.result}">
+        <div class="bet-left">
+          <div class="bet-date">${b.date} · ${b.time}</div>
+          <div class="bet-desc">${b.matches || '—'}</div>
+          <span class="bet-type-tag">${b.type}</span>
+          <span class="bet-type-tag">${b.result}</span>
+        </div>
+        <div class="bet-right">
+          <div class="bet-stake">${fmt(b.stake)}</div>
+          <div class="bet-return ${b.result}">${b.result === 'won' ? fmt(b.return) : b.result === 'lost' ? '-' + fmt(b.stake) : '—'}</div>
+          <div class="bet-profit">${b.result === 'won' ? '+' + fmt(b.return - b.stake) : ''}</div>
+        </div>
+        <button class="del-btn" onclick="deleteBet(${b.id})">×</button>
+      </div>
+    `).join('');
+  }
+
+  function renderStats() {
+    const bets = state.bets;
+    const wins = bets.filter(b => b.result === 'won').length;
+    const losses = bets.filter(b => b.result === 'lost').length;
+    const total = wins + losses;
+    const winRate = total ? ((wins / total) * 100).toFixed(0) : 0;
+    const totalStaked = bets.filter(b => b.result !== 'void').reduce((s, b) => s + b.stake, 0);
+    const totalReturn = bets.filter(b => b.result === 'won').reduce((s, b) => s + b.return, 0);
+    const roi = totalStaked ? (((totalReturn - totalStaked) / totalStaked) * 100).toFixed(0) : 0;
+    const growth = state.openingBankroll ? (((state.currentBankroll - state.openingBankroll) / state.openingBankroll) * 100).toFixed(0) : 0;
+
+    document.getElementById('statWins').textContent = wins;
+    document.getElementById('statLosses').textContent = losses;
+    document.getElementById('statWinRate').textContent = winRate + '%';
+    document.getElementById('statTotalStaked').textContent = fmtShort(totalStaked);
+    document.getElementById('statTotalReturn').textContent = fmtShort(totalReturn);
+    document.getElementById('statROI').textContent = roi + '%';
+    document.getElementById('statOpenBankroll').textContent = fmtShort(state.openingBankroll);
+    document.getElementById('statCurrentBankroll').textContent = fmtShort(state.currentBankroll);
+    document.getElementById('statGrowth').textContent = growth + '%';
+  }
+
+  function renderProjection() {
+    const b = state.currentBankroll;
+    if (!b) { document.getElementById('projectionList').innerHTML = ''; return; }
+    const target = 1000000;
+    let bankroll = b;
+    let days = 0;
+    const rows = [];
+    while (bankroll < target && days < 60) {
+      bankroll = bankroll * 2.5; // avg 2.5x
+      days++;
+      rows.push({ day: days, val: Math.min(bankroll, target) });
+    }
+    document.getElementById('projectionList').innerHTML = rows.slice(0, 10).map(r => `
+      <div class="bet-item">
+        <div class="bet-left">
+          <div class="bet-date">Day +${r.day}</div>
+          <div class="bet-desc" style="font-family:var(--mono);font-size:13px;">${fmt(r.val)}</div>
+        </div>
+        <div class="bet-right">
+          <div class="bet-return won">${r.val >= target ? '🏆 TARGET' : ''}</div>
+        </div>
+      </div>
+    `).join('') + `<div class="empty" style="padding:12px;">At avg 2.5x/day — ${days} days to KES 1M</div>`;
+  }
+
+  // ---- ACTIONS ----
+  function deleteBet(id) {
+    if (!confirm('Delete this bet?')) return;
+    const bet = state.bets.find(b => b.id === id);
+    if (!bet) return;
+    // Reverse bankroll effect
+    if (bet.result === 'won') {
+      state.currentBankroll = state.currentBankroll + bet.stake - bet.return;
+      state.streak = Math.max(0, state.streak - 1);
+    } else if (bet.result === 'lost') {
+      state.currentBankroll = state.currentBankroll + bet.stake;
+    }
+    state.bets = state.bets.filter(b => b.id !== id);
+    save();
+    render();
+  }
+
+  function clearAll() {
+    if (!confirm('Clear all data? This cannot be undone.')) return;
+    localStorage.removeItem('bankroll_state');
+    state = { openingBankroll: 0, currentBankroll: 0, bets: [], streak: 0, dayStart: null, dayBankroll: 0 };
+    save();
+    render();
+  }
+
+  function showAlert(msg, type) {
+    const el = document.getElementById('alertBox');
+    el.textContent = msg;
+    el.className = 'alert show ' + type;
+    setTimeout(() => el.classList.remove('show'), 4000);
+  }
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', ['log', 'history', 'stats'][i] === name);
+    });
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  // ---- BOOT ----
+  render();
+</script>
+</body>
+</html>
 
